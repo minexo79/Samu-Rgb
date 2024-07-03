@@ -1,0 +1,4 @@
+build/
+.vscode/
+samu_rgb_rel
+*.o
