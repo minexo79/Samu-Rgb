@@ -1,8 +1,12 @@
 #include "ws2812.h"
 
+uint8_t cnt = 0;
+
 ws2812::ws2812(int _pixel_count)
 {
     pixel_count = _pixel_count;
+
+    spi_buffer.resize((pixel_count * 12));
 }
 
 ws2812::~ws2812()
@@ -42,11 +46,40 @@ int ws2812::begin()
     return 0;
 }
 
-void ws2812::setPixelColor(color_t color)
+void ws2812::setPixelColorAt(int pixel_index, color_t color)
 {
-    encodeByte(color.green);
-    encodeByte(color.red);
-    encodeByte(color.blue);
+    if (pixel_index > -1)
+    {
+        encodeByte(pixel_index, color.green);
+        encodeByte(pixel_index, color.red);
+        encodeByte(pixel_index, color.blue);
+
+        cnt = 0; // reset idx counter
+    }
+}
+
+void ws2812::encodeByte(int pixel_index, uint8_t byte) 
+{
+    uint8_t push_data = 0x0;
+    for (int i = 7; i >= 0; --i)
+    {
+        // detect the bit value, and combine to push_data
+        push_data |= ((byte >> i) & 0x1) ? 0b0111 : 0b0100; // 1: 0b0111, 0: 0b0100
+
+        if (!(i % 2)) 
+        {
+            uint32_t idx = (pixel_index * 12) + (cnt++);
+
+            // std::cout << "Push Index: " << idx << " / Push data: " << std::hex << (int)push_data << std::endl;
+            spi_buffer[idx] = push_data;
+            push_data = 0x0;
+            continue;
+        }
+
+        // TODO: Add RST signal
+
+        push_data <<= 4;
+    }
 }
 
 int ws2812::show() 
@@ -65,25 +98,5 @@ int ws2812::show()
         return -1;
     }
 
-    spi_buffer.clear();
-
     return 0;
-}
-
-void ws2812::encodeByte(uint8_t byte) 
-{
-    uint8_t push_data = 0x0;
-    for (int i = 7; i >= 0; --i) {
-        // detect the bit value, and combine to push_data
-        push_data |= ((byte >> i) & 0x1) ? 0b0111 : 0b0100; // 1: 0b0111, 0: 0b0100
-
-        if (!(i % 2)) {
-            // push the data to the vector, reset the push_data
-            spi_buffer.push_back(push_data);
-            push_data = 0x0;
-            continue;
-        }
-
-        push_data <<= 4;
-    }
 }

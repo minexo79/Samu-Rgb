@@ -20,7 +20,7 @@ int main (void)
     for(;;)
     {
         std::cout << "Color index: " << color_index << std::endl;
-        ws2812_strip.setPixelColor(color[color_index]);
+        ws2812_strip.setPixelColorAt(0, color[color_index]);
         ws2812_strip.show();
 
         color_index = (color_index + 1) % 3;
