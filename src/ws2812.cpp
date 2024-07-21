@@ -1,4 +1,5 @@
-#include "ws2812.h"
+#include "../include/ws2812.h"
+#include "../include/utils.h"
 
 uint8_t cnt = 0;
 

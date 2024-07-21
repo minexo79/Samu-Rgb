@@ -1,5 +1,5 @@
-#include "utils.h"
-#include "ws2812.h"
+#include "../include/utils.h"
+#include "../include/ws2812.h"
 
 ws2812 ws2812_strip(1);
 
